@@ -1,0 +1,28 @@
+{
+  "name": "coopguard",
+  "version": "1.0.0",
+  "description": "CoopGuard — a powerful Discord moderation bot with 60+ slash commands and 40+ prefix commands.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js",
+    "register:guild": "node deploy-commands.js --guild",
+    "dev": "node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "moderation",
+    "automod",
+    "coopguard"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5"
+  }
+}
