@@ -7,19 +7,6 @@ module.exports = [
   {
     category: "settings",
     data: new SlashCommandBuilder()
-      .setName("setprefix")
-      .setDescription("Set the bot's prefix for this server.")
-      .addStringOption((o) => o.setName("prefix").setDescription("New prefix").setRequired(true))
-      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
-    async execute(interaction) {
-      const prefix = interaction.options.getString("prefix");
-      store.setSetting(interaction.guild.id, "prefix", prefix);
-      await interaction.reply({ embeds: [success("Prefix Set", `Prefix changed to \`${prefix}\`.`)] });
-    },
-  },
-  {
-    category: "settings",
-    data: new SlashCommandBuilder()
       .setName("setwelcome")
       .setDescription("Set the welcome channel for new members.")
       .addChannelOption((o) => o.setName("channel").setDescription("The welcome channel").setRequired(true))
