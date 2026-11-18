@@ -234,30 +234,6 @@ module.exports = [
   {
     category: "moderation",
     data: new SlashCommandBuilder()
-      .setName("serverinfo")
-      .setDescription("Get detailed info about the server."),
-    async execute(interaction) {
-      const g = interaction.guild;
-      const embed = {
-        title: g.name,
-        color: 0x5b8eff,
-        thumbnail: { url: g.iconURL() },
-        fields: [
-          { name: "ID", value: g.id, inline: true },
-          { name: "Owner", value: (await g.fetchOwner()).user.tag, inline: true },
-          { name: "Members", value: String(g.memberCount), inline: true },
-          { name: "Channels", value: String(g.channels.cache.size), inline: true },
-          { name: "Roles", value: String(g.roles.cache.size), inline: true },
-          { name: "Created", value: new Date(g.createdAt).toLocaleDateString(), inline: true },
-          { name: "Boost Level", value: String(g.premiumTier), inline: true },
-        ],
-      };
-      await interaction.reply({ embeds: [embed] });
-    },
-  },
-  {
-    category: "moderation",
-    data: new SlashCommandBuilder()
       .setName("roleinfo")
       .setDescription("Get info about a role.")
       .addRoleOption((o) => o.setName("role").setDescription("The role").setRequired(true)),
