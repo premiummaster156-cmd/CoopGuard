@@ -53,7 +53,6 @@ module.exports = [
           { name: "Users", value: String(interaction.client.users.cache.size), inline: true },
           { name: "Uptime", value: `${uptime}s`, inline: true },
           { name: "Slash Commands", value: String(interaction.client.slashCommands.size), inline: true },
-          { name: "Prefix Commands", value: String(interaction.client.prefixCommands.size), inline: true },
           { name: "Version", value: "1.0.0", inline: true },
         );
       await interaction.reply({ embeds: [embed] });
