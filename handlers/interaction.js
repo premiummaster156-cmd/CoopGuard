@@ -1,44 +1,64 @@
-const { Events } = require("discord.js");
+const { MessageFlags } = require("discord.js");
 const logger = require("../utils/logger");
-const { success, error } = require("../utils/embed");
+const { error } = require("../utils/embed");
+
+function sourceCommandName(interaction) {
+  return interaction.message?.interaction?.commandName ||
+    interaction.message?.interactionMetadata?.name ||
+    null;
+}
+
+async function replyPrivately(interaction, content) {
+  const payload = { content, flags: MessageFlags.Ephemeral };
+  if (interaction.deferred || interaction.replied) return interaction.followUp(payload).catch(() => {});
+  return interaction.reply(payload).catch(() => {});
+}
 
 async function handleInteraction(client, interaction) {
   try {
     if (interaction.isChatInputCommand()) {
-      const cmd = client.slashCommands.get(interaction.commandName);
-      if (!cmd) {
-        return interaction.reply({ embeds: [error("Unknown command", "This command is not registered.")], ephemeral: true });
+      const command = client.slashCommands.get(interaction.commandName);
+      if (!command) {
+        return interaction.reply({
+          embeds: [error("Unknown command", "This slash command is not registered.")],
+          flags: MessageFlags.Ephemeral,
+        });
       }
       try {
-        await cmd.execute(interaction, client);
-      } catch (err) {
-        logger.error(`Error in slash command /${interaction.commandName}:`, err);
-        const reply = { embeds: [error("Command Error", "Something went wrong while running this command.\n```\n" + (err.message || "Unknown error") + "\n```")], ephemeral: true };
-        if (interaction.replied || interaction.deferred) await interaction.editReply(reply).catch(() => {});
-        else await interaction.reply(reply).catch(() => {});
+        await command.execute(interaction, client);
+      } catch (commandError) {
+        logger.error("Error in /" + interaction.commandName + ":", commandError);
+        const payload = {
+          embeds: [error("Command Error", String(commandError.message || "Unknown error").slice(0, 900))],
+          flags: MessageFlags.Ephemeral,
+        };
+        if (interaction.replied || interaction.deferred) await interaction.editReply(payload).catch(() => {});
+        else await interaction.reply(payload).catch(() => {});
       }
       return;
     }
 
     if (interaction.isButton()) {
-      const handler = client.slashCommands.get(interaction.message.interaction?.commandName);
-      if (handler && handler.button) return handler.button(interaction, client);
-      return interaction.reply({ content: "No button handler.", ephemeral: true });
+      const command = client.slashCommands.get(sourceCommandName(interaction));
+      if (command?.button) return command.button(interaction, client);
+      return replyPrivately(interaction, "This button is no longer active.");
     }
 
     if (interaction.isStringSelectMenu()) {
-      const handler = client.slashCommands.get(interaction.message.interaction?.commandName);
-      if (handler && handler.select) return handler.select(interaction, client);
-      return interaction.reply({ content: "No select menu handler.", ephemeral: true });
+      const command = client.slashCommands.get(sourceCommandName(interaction));
+      if (command?.select) return command.select(interaction, client);
+      return replyPrivately(interaction, "This selection menu is no longer active.");
     }
 
     if (interaction.isModalSubmit()) {
-      const handler = client.slashCommands.get(interaction.customId.split(":")[0]);
-      if (handler && handler.modal) return handler.modal(interaction, client);
-      return interaction.reply({ content: "No modal handler.", ephemeral: true });
+      const commandName = String(interaction.customId || "").split(":")[0];
+      const command = client.slashCommands.get(commandName);
+      if (command?.modal) return command.modal(interaction, client);
+      return replyPrivately(interaction, "This form is no longer active.");
     }
-  } catch (err) {
-    logger.error("Interaction error:", err);
+  } catch (interactionError) {
+    logger.error("Interaction routing error:", interactionError);
+    await replyPrivately(interaction, "The interaction could not be completed. Please try again.");
   }
 }
 
